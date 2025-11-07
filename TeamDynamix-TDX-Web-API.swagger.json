@@ -1,0 +1,1048 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "TeamDynamix (TDX) Web API - Starter Spec",
+    "description": "TeamDynamix Web API – core endpoints for Auth, Tickets, Searches, Reports, and Attachments (Power Automate custom connector ready).\n"
+  },
+  "host": "wilksbrothers.teamdynamix.com",
+  "basePath": "/TDWebApi/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/auth": {
+      "post": {
+        "summary": "Authenticate (login)",
+        "description": "Logs in with username/password and returns a bearer token.",
+        "operationId": "Auth_Login",
+        "x-ms-summary": "Authenticate (login)",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "loginParams",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginParameters"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authentication result with bearer token.",
+            "schema": {
+              "$ref": "#/definitions/AuthResult"
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate (alternate)",
+        "description": "Some instances use `/auth/login` instead of `/auth`. Returns a bearer token.",
+        "operationId": "Auth_LoginAlt",
+        "x-ms-summary": "Authenticate (alternate)",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "loginParams",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginParameters"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AuthResult"
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/loginadmin": {
+      "post": {
+        "summary": "Authenticate as admin",
+        "description": "Logs in using BEID and WebServicesKey to obtain an admin bearer token.",
+        "operationId": "Auth_LoginAdmin",
+        "x-ms-summary": "Authenticate as admin",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AdminTokenParameters"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AuthResult"
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/getuser": {
+      "get": {
+        "summary": "Get current user",
+        "description": "Gets the current user associated with the bearer token.",
+        "operationId": "Auth_GetUser",
+        "x-ms-summary": "Get current user",
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/people": {
+      "get": {
+        "summary": "Search people",
+        "operationId": "People_Search",
+        "x-ms-summary": "Search people",
+        "description": "Find people by name or email to retrieve UID for ticket fields.",
+        "parameters": [
+          {
+            "name": "searchText",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "Name or email fragment"
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "type": "integer",
+            "format": "int32",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "People results",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{appId}/tickets": {
+      "post": {
+        "summary": "Create ticket",
+        "operationId": "Tickets_Create",
+        "x-ms-summary": "Create ticket",
+        "description": "Create ticket",
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": "TDX App ID (a.k.a. workspace/app/portfolio ID)"
+          },
+          {
+            "in": "body",
+            "name": "ticket",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TicketCreate"
+            }
+          },
+          {
+            "in": "query",
+            "name": "Notify",
+            "type": "boolean",
+            "required": false,
+            "description": "Whether to send notifications based on type settings."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created ticket",
+            "schema": {
+              "$ref": "#/definitions/Ticket"
+            }
+          }
+        }
+      }
+    },
+    "/{appId}/tickets/{id}": {
+      "get": {
+        "summary": "Get ticket by ID",
+        "operationId": "Tickets_GetById",
+        "x-ms-summary": "Get ticket by ID",
+        "description": "Get ticket by ID",
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": "TDX App ID (a.k.a. workspace/app/portfolio ID)"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Ticket ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket",
+            "schema": {
+              "$ref": "#/definitions/Ticket"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Update ticket",
+        "operationId": "Tickets_Update",
+        "x-ms-summary": "Update ticket",
+        "description": "Update ticket",
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": "TDX App ID (a.k.a. workspace/app/portfolio ID)"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Ticket ID"
+          },
+          {
+            "in": "body",
+            "name": "ticket",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TicketEdit"
+            }
+          },
+          {
+            "in": "query",
+            "name": "notifyNewResponsible",
+            "type": "boolean",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated ticket",
+            "schema": {
+              "$ref": "#/definitions/Ticket"
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Patch ticket",
+        "operationId": "Tickets_Patch",
+        "x-ms-summary": "Patch ticket",
+        "description": "Patch ticket",
+        "consumes": [
+          "application/json-patch+json",
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": "TDX App ID (a.k.a. workspace/app/portfolio ID)"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Ticket ID"
+          },
+          {
+            "in": "body",
+            "name": "operations",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/JsonPatchOperation"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "notifyNewResponsible",
+            "type": "boolean",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patched ticket",
+            "schema": {
+              "$ref": "#/definitions/Ticket"
+            }
+          }
+        }
+      }
+    },
+    "/{appId}/tickets/{id}/feed": {
+      "post": {
+        "summary": "Add ticket comment",
+        "operationId": "Tickets_AddComment",
+        "x-ms-summary": "Add ticket comment",
+        "description": "Add ticket comment",
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": "TDX App ID (a.k.a. workspace/app/portfolio ID)"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Ticket ID"
+          },
+          {
+            "in": "body",
+            "name": "comment",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "Text"
+              ],
+              "properties": {
+                "Text": {
+                  "type": "string"
+                },
+                "IsPrivate": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "Notify": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posted feed item",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ID": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "Text": {
+                  "type": "string"
+                },
+                "CreatedDate": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{appId}/tickets/{id}/attachments": {
+      "post": {
+        "summary": "Upload attachment to ticket",
+        "operationId": "Tickets_UploadAttachment",
+        "x-ms-summary": "Upload attachment",
+        "description": "Upload a file and attach it to a ticket.",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": "TDX App ID (a.k.a. workspace/app/portfolio ID)"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Ticket ID"
+          },
+          {
+            "name": "fileName",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "Desired file name (with extension)"
+          },
+          {
+            "name": "fileContent",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "File content to upload"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attachment metadata",
+            "schema": {
+              "$ref": "#/definitions/Attachment"
+            }
+          }
+        }
+      }
+    },
+    "/{appId}/tickets/searches": {
+      "get": {
+        "summary": "List ticket saved searches",
+        "operationId": "TicketSearches_List",
+        "x-ms-summary": "List ticket saved searches",
+        "description": "List ticket saved searches",
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": "TDX App ID (a.k.a. workspace/app/portfolio ID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saved searches",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SavedSearch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{appId}/tickets/searches/{searchId}/results": {
+      "post": {
+        "summary": "Get saved search results",
+        "operationId": "TicketSearches_GetResults",
+        "x-ms-summary": "Get saved search results",
+        "description": "Get saved search results",
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": "TDX App ID (a.k.a. workspace/app/portfolio ID)"
+          },
+          {
+            "name": "searchId",
+            "in": "path",
+            "type": "integer",
+            "format": "int32",
+            "required": true
+          },
+          {
+            "in": "body",
+            "name": "options",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SavedSearchRequestOptions"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "schema": {
+              "$ref": "#/definitions/PagedTickets"
+            }
+          }
+        }
+      }
+    },
+    "/{appId}/tickets/{id}/responsibles": {
+      "post": {
+        "summary": "Add responsible (assignee) to ticket",
+        "operationId": "Tickets_AddResponsible",
+        "x-ms-summary": "Add responsible",
+        "description": "Assign a user (UID) to the ticket. Can mark as primary.",
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": "TDX App ID (a.k.a. workspace/app/portfolio ID)"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Ticket ID"
+          },
+          {
+            "in": "body",
+            "name": "responsible",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "UID"
+              ],
+              "properties": {
+                "UID": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "IsPrimary": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "Notify": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Added"
+          }
+        }
+      }
+    },
+    "/reports": {
+      "get": {
+        "summary": "List reports",
+        "operationId": "Reports_List",
+        "x-ms-summary": "List reports",
+        "description": "List reports",
+        "responses": {
+          "200": {
+            "description": "Reports",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ReportInfo"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/{id}": {
+      "get": {
+        "summary": "Get report",
+        "operationId": "Reports_Get",
+        "x-ms-summary": "Get report",
+        "description": "Get report",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "withData",
+            "in": "query",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "dataSortExpression",
+            "in": "query",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report",
+            "schema": {
+              "$ref": "#/definitions/Report"
+            }
+          }
+        }
+      }
+    },
+    "/attachments/{id}": {
+      "get": {
+        "summary": "Get attachment",
+        "operationId": "Attachments_Get",
+        "x-ms-summary": "Get attachment",
+        "description": "Get attachment metadata by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Attachment GUID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attachment",
+            "schema": {
+              "$ref": "#/definitions/Attachment"
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete attachment",
+        "operationId": "Attachments_Delete",
+        "x-ms-summary": "Delete attachment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Attachment GUID."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/attachments/{id}/content": {
+      "get": {
+        "summary": "Download attachment content",
+        "operationId": "Attachments_GetContent",
+        "x-ms-summary": "Download attachment content",
+        "produces": [
+          "application/octet-stream"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Attachment GUID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File content (stream)"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "LoginParameters": {
+      "type": "object",
+      "required": [
+        "Username",
+        "Password"
+      ],
+      "properties": {
+        "Username": {
+          "type": "string"
+        },
+        "Password": {
+          "type": "string"
+        }
+      }
+    },
+    "AdminTokenParameters": {
+      "type": "object",
+      "required": [
+        "BEID",
+        "WebServicesKey"
+      ],
+      "properties": {
+        "BEID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "WebServicesKey": {
+          "type": "string"
+        }
+      }
+    },
+    "AuthResult": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "Expires": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "UID": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "FullName": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        }
+      }
+    },
+    "TicketCreate": {
+      "type": "object",
+      "properties": {
+        "Title": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "StatusID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "TypeID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "PriorityID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "AccountID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "RequestorUid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "CreateOptions": {
+          "$ref": "#/definitions/TicketCreateOptions"
+        }
+      }
+    },
+    "TicketEdit": {
+      "type": "object",
+      "properties": {
+        "Title": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "StatusID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "PriorityID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "AssigneeUID": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Ticket": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "StatusID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "TypeID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "PriorityID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "AccountID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "RequestorUid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CreatedDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ModifiedDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "TicketCreateOptions": {
+      "type": "object",
+      "properties": {
+        "EnableNotifyReviewer": {
+          "type": "boolean"
+        },
+        "EnableNotifyRequestor": {
+          "type": "boolean"
+        },
+        "EnableNotifyResponsible": {
+          "type": "boolean"
+        }
+      }
+    },
+    "JsonPatchOperation": {
+      "type": "object",
+      "required": [
+        "op",
+        "path"
+      ],
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "add",
+            "remove",
+            "replace",
+            "move",
+            "copy",
+            "test"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "description": "JSON Pointer path"
+        },
+        "value": {
+          "type": "object",
+          "description": "Value for add/replace/test"
+        },
+        "from": {
+          "type": "string",
+          "description": "Source path for move/copy"
+        }
+      }
+    },
+    "SavedSearch": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        }
+      }
+    },
+    "SavedSearchRequestOptions": {
+      "type": "object",
+      "properties": {
+        "PageNumber": {
+          "type": "integer",
+          "format": "int32",
+          "default": 1
+        },
+        "PageSize": {
+          "type": "integer",
+          "format": "int32",
+          "default": 50
+        },
+        "SortExpression": {
+          "type": "string"
+        }
+      }
+    },
+    "PagedTickets": {
+      "type": "object",
+      "properties": {
+        "TotalItems": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "PageNumber": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "PageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Ticket"
+          }
+        }
+      }
+    },
+    "ReportInfo": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        }
+      }
+    },
+    "Report": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Data": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "Attachment": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "FileName": {
+          "type": "string"
+        },
+        "ContentType": {
+          "type": "string"
+        },
+        "SizeBytes": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    }
+  },
+  "responses": {},
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization"
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ],
+  "tags": []
+}
