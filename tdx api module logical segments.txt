@@ -1,0 +1,45 @@
+Current coverage in the starter Swagger
+The existing specification already mixes authentication, directory lookups, ticket CRUD/feed/attachments/search, saved report execution, and attachment download endpoints in one document.
+
+Suggested connector segmentation
+To keep each Power Automate connector focused and manageable, align them with the major functional groupings from the official TDX Web API catalog:
+
+Core Administration & Directory
+
+Accounts, Applications, Attributes, Days Off, Feed, Groups, Industries, Integrations, Locations, People, Time, Type Categories, and bulk User Management endpoints let administrators manage foundational data and user records.
+
+Keep Auth endpoints here (or in a tiny shared connector) so administrative automations can obtain tokens and work with directory metadata.
+
+Service Management / Tickets
+
+Ticket CRUD plus supporting catalogs—impacts, priorities, sources, statuses, tasks, types, urgencies, maintenance activities, blackout windows, and ticket saved searches—form a natural incident/service request connector.
+
+Self-Service & Knowledge
+
+Knowledge Base articles/categories, Service Catalog items, and Project Requests underpin request-intake experiences, so bundling them together keeps customer-facing automation separate from back-office processes.
+
+Asset & Configuration Management
+
+Assets, configuration items, relationship types, contracts, Intune assets, maintenance windows, vendors, product models/types, and asset/configuration saved searches suit a dedicated ITAM/CMDB connector.
+
+Projects & Portfolio
+
+Projects, tasks, plans, issues/risks, briefcase files/folders, project templates/types, and links cluster into a project-delivery connector aligned with portfolio management users.
+
+Reporting & Analytics
+
+Report Builder execution (and asset/ticket saved searches if you prefer to surface them outside their operational connectors) can live in a lightweight analytics connector, making it easier to enforce pagination/query patterns without cluttering transactional connectors.
+
+Roles & Resource Management
+
+Functional roles, resource pools, and security roles target staffing/governance scenarios; placing them in their own connector avoids exposing privileged endpoints in frontline automation.
+
+Time & Scheduling (optional)
+
+If you have heavy use of time entry and scheduling data, breaking Time APIs into their own connector keeps timesheet automation isolated from either service management or project operations.
+
+Attachments & Feed (optional)
+
+Attachments and feed entries are referenced across modules; either keep them with the primary module that consumes them (tickets/projects) or expose them via a shared “Collaboration Utilities” connector so multiple flows can reuse consistent file-handling logic.
+
+This structure mirrors TeamDynamix’s own documentation hierarchy, keeps each connector aligned with a persona (service desk, knowledge manager, CMDB owner, PMO, reporting analyst, etc.), and minimizes the risk of hitting Power Automate’s action limits within a single connector.
