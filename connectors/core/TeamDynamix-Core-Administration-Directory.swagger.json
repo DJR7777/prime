@@ -1,0 +1,1417 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "TeamDynamix Web API - Core Administration & Directory",
+    "description": "TeamDynamix Web API endpoints for authentication, accounts, applications, groups, locations, integrations, type categories, industries, and directory management (Power Automate custom connector ready).\n"
+  },
+  "host": "wilksbrothers.teamdynamix.com",
+  "basePath": "/TDWebApi/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/auth": {
+      "post": {
+        "summary": "Authenticate (login)",
+        "description": "Logs in with username/password and returns a bearer token.",
+        "operationId": "Auth_Login",
+        "x-ms-summary": "Authenticate (login)",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "loginParams",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginParameters"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authentication result with bearer token.",
+            "schema": {
+              "$ref": "#/definitions/AuthResult"
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate (alternate)",
+        "description": "Some instances use `/auth/login` instead of `/auth`. Returns a bearer token.",
+        "operationId": "Auth_LoginAlt",
+        "x-ms-summary": "Authenticate (alternate)",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "loginParams",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginParameters"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AuthResult"
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/loginadmin": {
+      "post": {
+        "summary": "Authenticate as admin",
+        "description": "Logs in using BEID and WebServicesKey to obtain an admin bearer token.",
+        "operationId": "Auth_LoginAdmin",
+        "x-ms-summary": "Authenticate as admin",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AdminTokenParameters"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AuthResult"
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/getuser": {
+      "get": {
+        "summary": "Get current user",
+        "description": "Gets the current user associated with the bearer token.",
+        "operationId": "Auth_GetUser",
+        "x-ms-summary": "Get current user",
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/applications": {
+      "get": {
+        "summary": "List applications",
+        "operationId": "Applications_List",
+        "x-ms-summary": "List applications",
+        "description": "Gets the list of TeamDynamix applications available to the current user.",
+        "responses": {
+          "200": {
+            "description": "Applications",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Application"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create application",
+        "operationId": "Applications_Create",
+        "x-ms-summary": "Create application",
+        "description": "Creates a new user application.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "application",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ApplicationCreate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created application",
+            "schema": {
+              "$ref": "#/definitions/Application"
+            }
+          }
+        }
+      }
+    },
+    "/applications/{id}": {
+      "get": {
+        "summary": "Get application",
+        "operationId": "Applications_Get",
+        "x-ms-summary": "Get application",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Application",
+            "schema": {
+              "$ref": "#/definitions/Application"
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update application",
+        "operationId": "Applications_Update",
+        "x-ms-summary": "Update application",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "body",
+            "name": "application",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ApplicationUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated application",
+            "schema": {
+              "$ref": "#/definitions/Application"
+            }
+          }
+        }
+      }
+    },
+    "/accounts": {
+      "get": {
+        "summary": "List accounts",
+        "operationId": "Accounts_List",
+        "x-ms-summary": "List accounts",
+        "description": "Gets a list of all active accounts/departments visible to the current user.",
+        "parameters": [
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "type": "boolean",
+            "required": false,
+            "description": "Set to true to include inactive accounts."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Accounts",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Account"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create account",
+        "operationId": "Accounts_Create",
+        "x-ms-summary": "Create account",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "account",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AccountCreate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created account",
+            "schema": {
+              "$ref": "#/definitions/Account"
+            }
+          }
+        }
+      }
+    },
+    "/accounts/{id}": {
+      "get": {
+        "summary": "Get account",
+        "operationId": "Accounts_Get",
+        "x-ms-summary": "Get account",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account",
+            "schema": {
+              "$ref": "#/definitions/Account"
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update account",
+        "operationId": "Accounts_Update",
+        "x-ms-summary": "Update account",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "body",
+            "name": "account",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AccountUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated account",
+            "schema": {
+              "$ref": "#/definitions/Account"
+            }
+          }
+        }
+      }
+    },
+    "/groups": {
+      "get": {
+        "summary": "List groups",
+        "operationId": "Groups_List",
+        "x-ms-summary": "List groups",
+        "description": "Gets the groups available within the TeamDynamix people database.",
+        "parameters": [
+          {
+            "name": "searchText",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "Optional search text to filter groups by name."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Groups",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Group"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create group",
+        "operationId": "Groups_Create",
+        "x-ms-summary": "Create group",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "group",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GroupCreate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created group",
+            "schema": {
+              "$ref": "#/definitions/Group"
+            }
+          }
+        }
+      }
+    },
+    "/groups/{id}": {
+      "get": {
+        "summary": "Get group",
+        "operationId": "Groups_Get",
+        "x-ms-summary": "Get group",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group",
+            "schema": {
+              "$ref": "#/definitions/Group"
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update group",
+        "operationId": "Groups_Update",
+        "x-ms-summary": "Update group",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "body",
+            "name": "group",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GroupUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated group",
+            "schema": {
+              "$ref": "#/definitions/Group"
+            }
+          }
+        }
+      }
+    },
+    "/groups/{id}/members": {
+      "get": {
+        "summary": "List group members",
+        "operationId": "Groups_ListMembers",
+        "x-ms-summary": "List group members",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group members",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GroupMember"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add group member",
+        "operationId": "Groups_AddMember",
+        "x-ms-summary": "Add group member",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "isPrimary",
+            "in": "query",
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Set to true to make the member primary."
+          },
+          {
+            "name": "isNotified",
+            "in": "query",
+            "type": "boolean",
+            "required": false,
+            "default": true,
+            "description": "Set to false to disable notifications for the member."
+          },
+          {
+            "name": "isManager",
+            "in": "query",
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Set to true to mark the member as a manager."
+          },
+          {
+            "in": "body",
+            "name": "membership",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GroupMembershipChange"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated members",
+            "schema": {
+              "$ref": "#/definitions/GroupMember"
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove group member",
+        "operationId": "Groups_RemoveMember",
+        "x-ms-summary": "Remove group member",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "memberUid",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "uuid",
+            "description": "The UID of the member to remove."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Member removed"
+          }
+        }
+      }
+    },
+    "/groups/search": {
+      "post": {
+        "summary": "Search groups",
+        "operationId": "Groups_Search",
+        "x-ms-summary": "Search groups",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "criteria",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GroupSearchRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Groups",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Group"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/locations": {
+      "get": {
+        "summary": "List locations",
+        "operationId": "Locations_List",
+        "x-ms-summary": "List locations",
+        "description": "Gets all active locations.",
+        "parameters": [
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "type": "boolean",
+            "required": false,
+            "description": "Set to true to include inactive locations."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Locations",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Location"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/locations/{id}": {
+      "get": {
+        "summary": "Get location",
+        "operationId": "Locations_Get",
+        "x-ms-summary": "Get location",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location",
+            "schema": {
+              "$ref": "#/definitions/Location"
+            }
+          }
+        }
+      }
+    },
+    "/industries": {
+      "get": {
+        "summary": "List industries",
+        "operationId": "Industries_List",
+        "x-ms-summary": "List industries",
+        "description": "Gets the industry values that can be assigned to accounts/departments.",
+        "responses": {
+          "200": {
+            "description": "Industries",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Industry"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/integrations": {
+      "get": {
+        "summary": "List integrations",
+        "operationId": "Integrations_List",
+        "x-ms-summary": "List integrations",
+        "description": "Gets integrations configured in TeamDynamix.",
+        "responses": {
+          "200": {
+            "description": "Integrations",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Integration"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/typecategories": {
+      "get": {
+        "summary": "List type categories",
+        "operationId": "TypeCategories_List",
+        "x-ms-summary": "List type categories",
+        "description": "Gets type categories used to group ticket and project types.",
+        "responses": {
+          "200": {
+            "description": "Type categories",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TypeCategory"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daysoff": {
+      "get": {
+        "summary": "List days off",
+        "operationId": "DaysOff_List",
+        "x-ms-summary": "List days off",
+        "description": "Gets the list of configured organizational days off.",
+        "responses": {
+          "200": {
+            "description": "Days off",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DayOff"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/people": {
+      "get": {
+        "summary": "Search people",
+        "operationId": "People_Search",
+        "x-ms-summary": "Search people",
+        "description": "Search the TeamDynamix people directory by name, username, or email.",
+        "parameters": [
+          {
+            "name": "searchText",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "Name, email, or username to search for."
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "type": "integer",
+            "format": "int32",
+            "required": false,
+            "description": "Maximum number of results to return."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "People results",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Person"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create person",
+        "operationId": "People_Create",
+        "x-ms-summary": "Create person",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "person",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PersonCreate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created person",
+            "schema": {
+              "$ref": "#/definitions/Person"
+            }
+          }
+        }
+      }
+    },
+    "/people/{id}": {
+      "get": {
+        "summary": "Get person",
+        "operationId": "People_Get",
+        "x-ms-summary": "Get person",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Person",
+            "schema": {
+              "$ref": "#/definitions/Person"
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update person",
+        "operationId": "People_Update",
+        "x-ms-summary": "Update person",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "body",
+            "name": "person",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PersonUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated person",
+            "schema": {
+              "$ref": "#/definitions/Person"
+            }
+          }
+        }
+      }
+    },
+    "/people/uid/{uid}": {
+      "get": {
+        "summary": "Get person by UID",
+        "operationId": "People_GetByUid",
+        "x-ms-summary": "Get person by UID",
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Person",
+            "schema": {
+              "$ref": "#/definitions/Person"
+            }
+          }
+        }
+      }
+    },
+    "/people/search": {
+      "post": {
+        "summary": "Advanced people search",
+        "operationId": "People_SearchAdvanced",
+        "x-ms-summary": "Advanced people search",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "criteria",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PeopleSearchRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "People results",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Person"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/people/{id}/memberships": {
+      "get": {
+        "summary": "Get person memberships",
+        "operationId": "People_GetMemberships",
+        "x-ms-summary": "Get person memberships",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Memberships",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GroupMembership"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "LoginParameters": {
+      "type": "object",
+      "required": [
+        "Username",
+        "Password"
+      ],
+      "properties": {
+        "Username": {
+          "type": "string"
+        },
+        "Password": {
+          "type": "string"
+        }
+      }
+    },
+    "AdminTokenParameters": {
+      "type": "object",
+      "required": [
+        "BEID",
+        "WebServicesKey"
+      ],
+      "properties": {
+        "BEID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "WebServicesKey": {
+          "type": "string"
+        }
+      }
+    },
+    "AuthResult": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "Expires": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "UID": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "FullName": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        }
+      }
+    },
+    "Account": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Code": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "ParentID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ParentName": {
+          "type": "string"
+        },
+        "IsActive": {
+          "type": "boolean"
+        },
+        "Address1": {
+          "type": "string"
+        },
+        "Address2": {
+          "type": "string"
+        },
+        "Address3": {
+          "type": "string"
+        },
+        "Address4": {
+          "type": "string"
+        },
+        "City": {
+          "type": "string"
+        },
+        "StateName": {
+          "type": "string"
+        },
+        "PostalCode": {
+          "type": "string"
+        },
+        "Country": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "Fax": {
+          "type": "string"
+        },
+        "WebsiteUrl": {
+          "type": "string"
+        },
+        "Attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "AccountCreate": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/Account"
+        }
+      ]
+    },
+    "AccountUpdate": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/Account"
+        }
+      ]
+    },
+    "Application": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "AppStatus": {
+          "type": "string"
+        },
+        "IsActive": {
+          "type": "boolean"
+        },
+        "OwningGroupID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "OwningGroupName": {
+          "type": "string"
+        }
+      }
+    },
+    "ApplicationCreate": {
+      "type": "object",
+      "required": [
+        "Name"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "OwningGroupID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "IsActive": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ApplicationUpdate": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ApplicationCreate"
+        }
+      ]
+    },
+    "Group": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "IsActive": {
+          "type": "boolean"
+        },
+        "MemberCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "GroupCreate": {
+      "type": "object",
+      "required": [
+        "Name"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "IsActive": {
+          "type": "boolean"
+        }
+      }
+    },
+    "GroupUpdate": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/GroupCreate"
+        }
+      ]
+    },
+    "GroupMember": {
+      "type": "object",
+      "properties": {
+        "UID": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "FullName": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "IsPrimary": {
+          "type": "boolean"
+        },
+        "IsNotified": {
+          "type": "boolean"
+        },
+        "IsManager": {
+          "type": "boolean"
+        }
+      }
+    },
+    "GroupMembership": {
+      "type": "object",
+      "properties": {
+        "GroupID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "GroupName": {
+          "type": "string"
+        },
+        "IsPrimary": {
+          "type": "boolean"
+        },
+        "IsNotified": {
+          "type": "boolean"
+        },
+        "IsManager": {
+          "type": "boolean"
+        }
+      }
+    },
+    "GroupMembershipChange": {
+      "type": "object",
+      "required": [
+        "MemberUid"
+      ],
+      "properties": {
+        "MemberUid": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "GroupSearchRequest": {
+      "type": "object",
+      "properties": {
+        "SearchText": {
+          "type": "string"
+        },
+        "IncludeInactive": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Location": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "ParentID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ParentName": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "IsActive": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Industry": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        }
+      }
+    },
+    "Integration": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Category": {
+          "type": "string"
+        },
+        "IsActive": {
+          "type": "boolean"
+        }
+      }
+    },
+    "TypeCategory": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "ObjectType": {
+          "type": "string"
+        },
+        "IsActive": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DayOff": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "StartDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "EndDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "IsAllDay": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Person": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "UID": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Username": {
+          "type": "string"
+        },
+        "PrimaryEmail": {
+          "type": "string"
+        },
+        "FullName": {
+          "type": "string"
+        },
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "MiddleName": {
+          "type": "string"
+        },
+        "DisplayName": {
+          "type": "string"
+        },
+        "IsActive": {
+          "type": "boolean"
+        },
+        "PrimaryPhone": {
+          "type": "string"
+        },
+        "AccountID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "LocationID": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "PersonCreate": {
+      "type": "object",
+      "required": [
+        "Username",
+        "FirstName",
+        "LastName",
+        "PrimaryEmail"
+      ],
+      "properties": {
+        "Username": {
+          "type": "string"
+        },
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "PrimaryEmail": {
+          "type": "string"
+        },
+        "MiddleName": {
+          "type": "string"
+        },
+        "PreferredName": {
+          "type": "string"
+        },
+        "PrimaryPhone": {
+          "type": "string"
+        },
+        "AccountID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "LocationID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "IsActive": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "PersonUpdate": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PersonCreate"
+        }
+      ]
+    },
+    "PeopleSearchRequest": {
+      "type": "object",
+      "properties": {
+        "SearchText": {
+          "type": "string"
+        },
+        "IncludeInactive": {
+          "type": "boolean"
+        },
+        "MaxResults": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ]
+}
