@@ -1,0 +1,235 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "TeamDynamix - Self-Service & Knowledge",
+    "version": "1.0.0",
+    "description": "Implements the TeamDynamix Knowledge Base, Service Catalog, and Request APIs (self-service and knowledge-management collaboration utilities). \
+Designed for Power Automate custom connectors, authenticated with a Bearer token retrieved from the Core Administration & Directory connector."
+  },
+  "schemes": ["https"],
+  "host": "wilksbrothers.teamdynamix.com",
+  "basePath": "/TDWebApi/api",
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Bearer {token} obtained from the Core connector"
+    }
+  },
+  "security": [{ "api_key": [] }],
+
+  "paths": {
+    "/knowledgebase/articles": {
+      "get": {
+        "tags": ["Knowledge Base"],
+        "operationId": "Knowledge_ListArticles",
+        "x-ms-summary": "List knowledge base articles (paged)",
+        "parameters": [
+          { "name": "categoryId", "in": "query", "type": "integer", "format": "int32", "required": false },
+          { "name": "searchText", "in": "query", "type": "string", "required": false },
+          { "name": "isPublished", "in": "query", "type": "boolean", "required": false, "default": true },
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "pageSize", "in": "query", "type": "integer", "default": 50 }
+        ],
+        "responses": {
+          "200": { "description": "Paged list of articles", "schema": { "$ref": "#/definitions/PagedKnowledgeArticles" } }
+        }
+      }
+    },
+    "/knowledgebase/articles/{id}": {
+      "get": {
+        "tags": ["Knowledge Base"],
+        "operationId": "Knowledge_GetArticle",
+        "x-ms-summary": "Get knowledge base article",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" }
+        ],
+        "responses": {
+          "200": { "description": "Knowledge article", "schema": { "$ref": "#/definitions/KnowledgeArticle" } },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/knowledgebase/categories": {
+      "get": {
+        "tags": ["Knowledge Base"],
+        "operationId": "Knowledge_ListCategories",
+        "x-ms-summary": "List knowledge base categories",
+        "responses": {
+          "200": { "description": "Categories", "schema": { "type": "array", "items": { "$ref": "#/definitions/KnowledgeCategory" } } }
+        }
+      }
+    },
+
+    "/servicecatalog/items": {
+      "get": {
+        "tags": ["Service Catalog"],
+        "operationId": "Catalog_ListItems",
+        "x-ms-summary": "List service catalog items (paged)",
+        "parameters": [
+          { "name": "categoryId", "in": "query", "type": "integer", "required": false },
+          { "name": "searchText", "in": "query", "type": "string", "required": false },
+          { "name": "isActive", "in": "query", "type": "boolean", "default": true },
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "pageSize", "in": "query", "type": "integer", "default": 50 }
+        ],
+        "responses": {
+          "200": { "description": "Paged service catalog items", "schema": { "$ref": "#/definitions/PagedCatalogItems" } }
+        }
+      }
+    },
+    "/servicecatalog/items/{id}": {
+      "get": {
+        "tags": ["Service Catalog"],
+        "operationId": "Catalog_GetItem",
+        "x-ms-summary": "Get service catalog item",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer" }
+        ],
+        "responses": {
+          "200": { "description": "Catalog item", "schema": { "$ref": "#/definitions/CatalogItem" } },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/servicecatalog/categories": {
+      "get": {
+        "tags": ["Service Catalog"],
+        "operationId": "Catalog_ListCategories",
+        "x-ms-summary": "List service catalog categories",
+        "responses": {
+          "200": { "description": "Categories", "schema": { "type": "array", "items": { "$ref": "#/definitions/CatalogCategory" } } }
+        }
+      }
+    },
+
+    "/requests": {
+      "post": {
+        "tags": ["Requests"],
+        "operationId": "Requests_SubmitRequest",
+        "x-ms-summary": "Submit self-service request (create project or ticket request)",
+        "parameters": [
+          { "name": "request", "in": "body", "required": true, "schema": { "$ref": "#/definitions/RequestCreate" } }
+        ],
+        "responses": {
+          "200": { "description": "Created request", "schema": { "$ref": "#/definitions/RequestResponse" } },
+          "400": { "description": "Bad request" }
+        }
+      }
+    },
+    "/requests/{id}": {
+      "get": {
+        "tags": ["Requests"],
+        "operationId": "Requests_GetRequest",
+        "x-ms-summary": "Get request by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" }
+        ],
+        "responses": {
+          "200": { "description": "Request", "schema": { "$ref": "#/definitions/RequestResponse" } },
+          "404": { "description": "Not found" }
+        }
+      }
+    }
+  },
+
+  "definitions": {
+    "KnowledgeArticle": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "Title": { "type": "string" },
+        "Summary": { "type": "string" },
+        "Body": { "type": "string" },
+        "CategoryID": { "type": "integer", "format": "int32" },
+        "CategoryName": { "type": "string" },
+        "IsPublished": { "type": "boolean" },
+        "CreatedDate": { "type": "string", "format": "date-time" },
+        "ModifiedDate": { "type": "string", "format": "date-time" },
+        "OwnerUid": { "type": "string", "format": "uuid" },
+        "Attachments": { "type": "array", "items": { "$ref": "#/definitions/AttachmentSummary" } }
+      }
+    },
+    "KnowledgeCategory": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "Name": { "type": "string" },
+        "ParentID": { "type": "integer", "format": "int32" }
+      }
+    },
+    "PagedKnowledgeArticles": {
+      "type": "object",
+      "properties": {
+        "TotalCount": { "type": "integer", "format": "int32" },
+        "Page": { "type": "integer", "format": "int32" },
+        "PageSize": { "type": "integer", "format": "int32" },
+        "Items": { "type": "array", "items": { "$ref": "#/definitions/KnowledgeArticle" } }
+      }
+    },
+    "CatalogItem": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer" },
+        "Name": { "type": "string" },
+        "Description": { "type": "string" },
+        "CategoryID": { "type": "integer" },
+        "CategoryName": { "type": "string" },
+        "IsActive": { "type": "boolean" },
+        "IconPath": { "type": "string" },
+        "Attachments": { "type": "array", "items": { "$ref": "#/definitions/AttachmentSummary" } }
+      }
+    },
+    "CatalogCategory": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer" },
+        "Name": { "type": "string" },
+        "ParentID": { "type": "integer" }
+      }
+    },
+    "PagedCatalogItems": {
+      "type": "object",
+      "properties": {
+        "TotalCount": { "type": "integer" },
+        "Page": { "type": "integer" },
+        "PageSize": { "type": "integer" },
+        "Items": { "type": "array", "items": { "$ref": "#/definitions/CatalogItem" } }
+      }
+    },
+    "RequestCreate": {
+      "type": "object",
+      "required": ["CatalogItemID", "RequestorUid"],
+      "properties": {
+        "CatalogItemID": { "type": "integer" },
+        "RequestorUid": { "type": "string", "format": "uuid" },
+        "Description": { "type": "string" },
+        "Attributes": { "type": "object", "additionalProperties": { "type": "string" } },
+        "Attachments": { "type": "array", "items": { "$ref": "#/definitions/AttachmentSummary" } }
+      }
+    },
+    "RequestResponse": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer" },
+        "CatalogItemID": { "type": "integer" },
+        "Status": { "type": "string" },
+        "Number": { "type": "string" },
+        "CreatedDate": { "type": "string", "format": "date-time" },
+        "RequestorUid": { "type": "string", "format": "uuid" }
+      }
+    },
+    "AttachmentSummary": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer" },
+        "Name": { "type": "string" },
+        "SizeBytes": { "type": "integer" },
+        "ContentType": { "type": "string" }
+      }
+    }
+  }
+}
