@@ -1,0 +1,560 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "TeamDynamix - Service Management / Ticket Tasks",
+    "version": "1.1.0",
+    "description": "Operational endpoints for Ticket Tasks in TeamDynamix Service Management. Includes core task CRUD, search (incl. saved searches), assignment, status updates, catalogs, plus task Dependencies, Time Entry, and Approvals. Use with the Core connector for authentication (Authorization: Bearer <token>). Attachments and feed are handled by the Attachments & Feed connector."
+  },
+  "schemes": ["https"],
+  "host": "wilksbrothers.teamdynamix.com",
+  "basePath": "/TDWebApi/api",
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Bearer {token} obtained from Core connector"
+    }
+  },
+  "security": [{ "api_key": [] }],
+
+  "paths": {
+    "/tickets/{ticketId}/tasks": {
+      "get": {
+        "tags": ["Ticket Tasks"],
+        "operationId": "TicketTasks_ListForTicket",
+        "x-ms-summary": "List tasks for a ticket (paged)",
+        "parameters": [
+          { "name": "ticketId", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "statusId", "in": "query", "type": "integer", "format": "int32" },
+          { "name": "assignedToUid", "in": "query", "type": "string", "format": "uuid" },
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "pageSize", "in": "query", "type": "integer", "default": 50 }
+        ],
+        "responses": {
+          "200": { "description": "Paged tasks", "schema": { "$ref": "#/definitions/PagedTasks" } },
+          "404": { "description": "Ticket not found" }
+        }
+      },
+      "post": {
+        "tags": ["Ticket Tasks"],
+        "operationId": "TicketTasks_CreateForTicket",
+        "x-ms-summary": "Create task on a ticket",
+        "parameters": [
+          { "name": "ticketId", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "task", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TicketTaskCreate" } }
+        ],
+        "responses": {
+          "200": { "description": "Created task", "schema": { "$ref": "#/definitions/TicketTask" } },
+          "400": { "description": "Bad request" }
+        }
+      }
+    },
+
+    "/tickets/tasks/{id}": {
+      "get": {
+        "tags": ["Ticket Tasks"],
+        "operationId": "TicketTasks_Get",
+        "x-ms-summary": "Get task by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" }
+        ],
+        "responses": {
+          "200": { "description": "Task", "schema": { "$ref": "#/definitions/TicketTask" } },
+          "404": { "description": "Not found" }
+        }
+      },
+      "put": {
+        "tags": ["Ticket Tasks"],
+        "operationId": "TicketTasks_Update",
+        "x-ms-summary": "Update task",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "task", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TicketTaskUpdate" } }
+        ],
+        "responses": {
+          "200": { "description": "Updated task", "schema": { "$ref": "#/definitions/TicketTask" } }
+        }
+      }
+    },
+
+    "/tickets/tasks/search": {
+      "post": {
+        "tags": ["Ticket Tasks - Search"],
+        "operationId": "TicketTasks_Search",
+        "x-ms-summary": "Search tasks (paged)",
+        "parameters": [
+          { "name": "criteria", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TicketTaskSearchRequest" } }
+        ],
+        "responses": {
+          "200": { "description": "Paged search results", "schema": { "$ref": "#/definitions/PagedTasks" } }
+        }
+      }
+    },
+
+    "/tickets/tasks/savedsearches": {
+      "get": {
+        "tags": ["Ticket Tasks - Saved Searches"],
+        "operationId": "TicketTasks_ListSavedSearches",
+        "x-ms-summary": "List task saved searches",
+        "responses": {
+          "200": { "description": "Saved searches", "schema": { "type": "array", "items": { "$ref": "#/definitions/SavedSearch" } } }
+        }
+      }
+    },
+
+    "/tickets/tasks/savedsearches/{savedSearchId}/results": {
+      "get": {
+        "tags": ["Ticket Tasks - Saved Searches"],
+        "operationId": "TicketTasks_RunSavedSearch",
+        "x-ms-summary": "Run task saved search (paged)",
+        "parameters": [
+          { "name": "savedSearchId", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "pageSize", "in": "query", "type": "integer", "default": 50 }
+        ],
+        "responses": {
+          "200": { "description": "Paged results", "schema": { "$ref": "#/definitions/PagedTasks" } }
+        }
+      }
+    },
+
+    "/tickets/tasks/{id}/assign": {
+      "post": {
+        "tags": ["Ticket Tasks - Actions"],
+        "operationId": "TicketTasks_Assign",
+        "x-ms-summary": "Assign task",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "assignment", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TicketTaskAssignment" } }
+        ],
+        "responses": {
+          "200": { "description": "Updated task", "schema": { "$ref": "#/definitions/TicketTask" } }
+        }
+      }
+    },
+
+    "/tickets/tasks/{id}/status": {
+      "post": {
+        "tags": ["Ticket Tasks - Actions"],
+        "operationId": "TicketTasks_SetStatus",
+        "x-ms-summary": "Set task status",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "statusUpdate", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TicketTaskStatusUpdate" } }
+        ],
+        "responses": {
+          "200": { "description": "Updated task", "schema": { "$ref": "#/definitions/TicketTask" } }
+        }
+      }
+    },
+
+    "/tickets/tasks/catalog/statuses": {
+      "get": {
+        "tags": ["Catalogs"],
+        "operationId": "TicketTasks_ListStatuses",
+        "x-ms-summary": "List task statuses",
+        "responses": {
+          "200": { "description": "Statuses", "schema": { "type": "array", "items": { "$ref": "#/definitions/NamedValue" } } }
+        }
+      }
+    },
+    "/tickets/tasks/catalog/types": {
+      "get": {
+        "tags": ["Catalogs"],
+        "operationId": "TicketTasks_ListTypes",
+        "x-ms-summary": "List task types",
+        "responses": {
+          "200": { "description": "Types", "schema": { "type": "array", "items": { "$ref": "#/definitions/NamedValue" } } }
+        }
+      }
+    },
+    "/tickets/tasks/catalog/priorities": {
+      "get": {
+        "tags": ["Catalogs"],
+        "operationId": "TicketTasks_ListPriorities",
+        "x-ms-summary": "List task priorities",
+        "responses": {
+          "200": { "description": "Priorities", "schema": { "type": "array", "items": { "$ref": "#/definitions/NamedValue" } } }
+        }
+      }
+    },
+
+    /* ---------- Dependencies ---------- */
+
+    "/tickets/tasks/{id}/dependencies": {
+      "get": {
+        "tags": ["Ticket Tasks - Dependencies"],
+        "operationId": "TicketTasks_ListDependencies",
+        "x-ms-summary": "List task dependencies",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "pageSize", "in": "query", "type": "integer", "default": 50 }
+        ],
+        "responses": {
+          "200": { "description": "Paged dependencies", "schema": { "$ref": "#/definitions/PagedDependencies" } }
+        }
+      },
+      "post": {
+        "tags": ["Ticket Tasks - Dependencies"],
+        "operationId": "TicketTasks_AddDependency",
+        "x-ms-summary": "Add dependency (predecessor/successor)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "dependency", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TicketTaskDependencyCreate" } }
+        ],
+        "responses": {
+          "200": { "description": "Dependency", "schema": { "$ref": "#/definitions/TicketTaskDependency" } }
+        }
+      }
+    },
+
+    "/tickets/tasks/{id}/dependencies/{dependencyId}": {
+      "delete": {
+        "tags": ["Ticket Tasks - Dependencies"],
+        "operationId": "TicketTasks_DeleteDependency",
+        "x-ms-summary": "Delete dependency",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "dependencyId", "in": "path", "required": true, "type": "integer", "format": "int32" }
+        ],
+        "responses": {
+          "204": { "description": "Deleted" }
+        }
+      }
+    },
+
+    /* ---------- Time Entry ---------- */
+
+    "/tickets/tasks/{id}/time": {
+      "get": {
+        "tags": ["Ticket Tasks - Time"],
+        "operationId": "TicketTasks_ListTimeEntries",
+        "x-ms-summary": "List time entries for a task (paged)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "from", "in": "query", "type": "string", "format": "date-time" },
+          { "name": "to", "in": "query", "type": "string", "format": "date-time" },
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "pageSize", "in": "query", "type": "integer", "default": 50 }
+        ],
+        "responses": {
+          "200": { "description": "Paged time entries", "schema": { "$ref": "#/definitions/PagedTimeEntries" } }
+        }
+      },
+      "post": {
+        "tags": ["Ticket Tasks - Time"],
+        "operationId": "TicketTasks_AddTimeEntry",
+        "x-ms-summary": "Add time entry to task",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "entry", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TimeEntryCreate" } }
+        ],
+        "responses": {
+          "200": { "description": "Time entry", "schema": { "$ref": "#/definitions/TimeEntry" } }
+        }
+      }
+    },
+
+    "/tickets/tasks/time/{timeEntryId}": {
+      "put": {
+        "tags": ["Ticket Tasks - Time"],
+        "operationId": "TicketTasks_UpdateTimeEntry",
+        "x-ms-summary": "Update time entry",
+        "parameters": [
+          { "name": "timeEntryId", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "entry", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TimeEntryUpdate" } }
+        ],
+        "responses": {
+          "200": { "description": "Updated time entry", "schema": { "$ref": "#/definitions/TimeEntry" } }
+        }
+      },
+      "delete": {
+        "tags": ["Ticket Tasks - Time"],
+        "operationId": "TicketTasks_DeleteTimeEntry",
+        "x-ms-summary": "Delete time entry",
+        "parameters": [
+          { "name": "timeEntryId", "in": "path", "required": true, "type": "integer", "format": "int32" }
+        ],
+        "responses": {
+          "204": { "description": "Deleted" }
+        }
+      }
+    },
+
+    /* ---------- Approvals ---------- */
+
+    "/tickets/tasks/{id}/approvals": {
+      "get": {
+        "tags": ["Ticket Tasks - Approvals"],
+        "operationId": "TicketTasks_ListApprovals",
+        "x-ms-summary": "List approvals for a task (paged)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "pageSize", "in": "query", "type": "integer", "default": 50 }
+        ],
+        "responses": {
+          "200": { "description": "Paged approvals", "schema": { "$ref": "#/definitions/PagedApprovals" } }
+        }
+      },
+      "post": {
+        "tags": ["Ticket Tasks - Approvals"],
+        "operationId": "TicketTasks_CreateApproval",
+        "x-ms-summary": "Create approval request on task",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "approval", "in": "body", "required": true, "schema": { "$ref": "#/definitions/ApprovalCreate" } }
+        ],
+        "responses": {
+          "200": { "description": "Approval", "schema": { "$ref": "#/definitions/Approval" } }
+        }
+      }
+    },
+
+    "/tickets/tasks/approvals/{approvalId}/actions": {
+      "post": {
+        "tags": ["Ticket Tasks - Approvals"],
+        "operationId": "TicketTasks_ActOnApproval",
+        "x-ms-summary": "Approve/Reject/Request changes",
+        "parameters": [
+          { "name": "approvalId", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "action", "in": "body", "required": true, "schema": { "$ref": "#/definitions/ApprovalAction" } }
+        ],
+        "responses": {
+          "200": { "description": "Updated approval", "schema": { "$ref": "#/definitions/Approval" } }
+        }
+      }
+    }
+  },
+
+  "definitions": {
+    "TicketTask": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "TicketID": { "type": "integer", "format": "int32" },
+        "Title": { "type": "string" },
+        "Description": { "type": "string" },
+        "TypeID": { "type": "integer", "format": "int32" },
+        "StatusID": { "type": "integer", "format": "int32" },
+        "PriorityID": { "type": "integer", "format": "int32" },
+        "AssignedGroupID": { "type": "integer", "format": "int32" },
+        "AssignedUid": { "type": "string", "format": "uuid" },
+        "StartDate": { "type": "string", "format": "date-time" },
+        "DueDate": { "type": "string", "format": "date-time" },
+        "PercentComplete": { "type": "integer", "format": "int32" },
+        "CreatedDate": { "type": "string", "format": "date-time" },
+        "ModifiedDate": { "type": "string", "format": "date-time" }
+      }
+    },
+    "TicketTaskCreate": {
+      "type": "object",
+      "required": ["Title"],
+      "properties": {
+        "Title": { "type": "string" },
+        "Description": { "type": "string" },
+        "TypeID": { "type": "integer", "format": "int32" },
+        "StatusID": { "type": "integer", "format": "int32" },
+        "PriorityID": { "type": "integer", "format": "int32" },
+        "AssignedGroupID": { "type": "integer", "format": "int32" },
+        "AssignedUid": { "type": "string", "format": "uuid" },
+        "StartDate": { "type": "string", "format": "date-time" },
+        "DueDate": { "type": "string", "format": "date-time" }
+      }
+    },
+    "TicketTaskUpdate": {
+      "allOf": [ { "$ref": "#/definitions/TicketTaskCreate" } ]
+    },
+    "TicketTaskAssignment": {
+      "type": "object",
+      "properties": {
+        "AssignedGroupID": { "type": "integer", "format": "int32" },
+        "AssignedUid": { "type": "string", "format": "uuid" }
+      }
+    },
+    "TicketTaskStatusUpdate": {
+      "type": "object",
+      "required": ["StatusID"],
+      "properties": {
+        "StatusID": { "type": "integer", "format": "int32" },
+        "PercentComplete": { "type": "integer", "format": "int32" }
+      }
+    },
+
+    /* --- Search & Paging --- */
+
+    "TicketTaskSearchRequest": {
+      "type": "object",
+      "properties": {
+        "TicketID": { "type": "integer", "format": "int32" },
+        "Text": { "type": "string" },
+        "TypeIDs": { "type": "array", "items": { "type": "integer", "format": "int32" } },
+        "StatusIDs": { "type": "array", "items": { "type": "integer", "format": "int32" } },
+        "PriorityIDs": { "type": "array", "items": { "type": "integer", "format": "int32" } },
+        "AssignedUid": { "type": "string", "format": "uuid" },
+        "CreatedAfter": { "type": "string", "format": "date-time" },
+        "CreatedBefore": { "type": "string", "format": "date-time" },
+        "SortField": { "type": "string", "enum": ["CreatedDate","DueDate","Priority","Status","Title"] },
+        "SortDirection": { "type": "string", "enum": ["Asc","Desc"], "default": "Desc" },
+        "Page": { "type": "integer", "format": "int32", "default": 1 },
+        "PageSize": { "type": "integer", "format": "int32", "default": 50 }
+      }
+    },
+    "PagedTasks": {
+      "type": "object",
+      "properties": {
+        "TotalCount": { "type": "integer", "format": "int32" },
+        "Page": { "type": "integer", "format": "int32" },
+        "PageSize": { "type": "integer", "format": "int32" },
+        "Items": { "type": "array", "items": { "$ref": "#/definitions/TicketTask" } }
+      }
+    },
+    "SavedSearch": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "Name": { "type": "string" },
+        "Description": { "type": "string" }
+      }
+    },
+    "NamedValue": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "Name": { "type": "string" }
+      }
+    },
+
+    /* --- Dependencies --- */
+
+    "TicketTaskDependency": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "PredecessorTaskID": { "type": "integer", "format": "int32" },
+        "SuccessorTaskID": { "type": "integer", "format": "int32" },
+        "LinkType": { "type": "string", "enum": ["FS","SS","FF","SF"], "description": "Finish-Start (FS), Start-Start (SS), Finish-Finish (FF), Start-Finish (SF)" },
+        "LagMinutes": { "type": "integer", "format": "int32" },
+        "CreatedDate": { "type": "string", "format": "date-time" }
+      }
+    },
+    "TicketTaskDependencyCreate": {
+      "type": "object",
+      "required": ["PredecessorTaskID","SuccessorTaskID","LinkType"],
+      "properties": {
+        "PredecessorTaskID": { "type": "integer", "format": "int32" },
+        "SuccessorTaskID": { "type": "integer", "format": "int32" },
+        "LinkType": { "type": "string", "enum": ["FS","SS","FF","SF"] },
+        "LagMinutes": { "type": "integer", "format": "int32", "default": 0 }
+      }
+    },
+    "PagedDependencies": {
+      "type": "object",
+      "properties": {
+        "TotalCount": { "type": "integer", "format": "int32" },
+        "Page": { "type": "integer", "format": "int32" },
+        "PageSize": { "type": "integer", "format": "int32" },
+        "Items": { "type": "array", "items": { "$ref": "#/definitions/TicketTaskDependency" } }
+      }
+    },
+
+    /* --- Time Entry --- */
+
+    "TimeEntry": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "TaskID": { "type": "integer", "format": "int32" },
+        "UserUid": { "type": "string", "format": "uuid" },
+        "StartDateTime": { "type": "string", "format": "date-time" },
+        "EndDateTime": { "type": "string", "format": "date-time" },
+        "Hours": { "type": "number", "format": "float" },
+        "Notes": { "type": "string" },
+        "Billable": { "type": "boolean" },
+        "CreatedDate": { "type": "string", "format": "date-time" },
+        "ModifiedDate": { "type": "string", "format": "date-time" }
+      }
+    },
+    "TimeEntryCreate": {
+      "type": "object",
+      "required": ["UserUid"],
+      "properties": {
+        "UserUid": { "type": "string", "format": "uuid" },
+        "StartDateTime": { "type": "string", "format": "date-time" },
+        "EndDateTime": { "type": "string", "format": "date-time" },
+        "Hours": { "type": "number", "format": "float" },
+        "Notes": { "type": "string" },
+        "Billable": { "type": "boolean", "default": false }
+      }
+    },
+    "TimeEntryUpdate": {
+      "type": "object",
+      "properties": {
+        "StartDateTime": { "type": "string", "format": "date-time" },
+        "EndDateTime": { "type": "string", "format": "date-time" },
+        "Hours": { "type": "number", "format": "float" },
+        "Notes": { "type": "string" },
+        "Billable": { "type": "boolean" }
+      }
+    },
+    "PagedTimeEntries": {
+      "type": "object",
+      "properties": {
+        "TotalCount": { "type": "integer", "format": "int32" },
+        "Page": { "type": "integer", "format": "int32" },
+        "PageSize": { "type": "integer", "format": "int32" },
+        "Items": { "type": "array", "items": { "$ref": "#/definitions/TimeEntry" } }
+      }
+    },
+
+    /* --- Approvals --- */
+
+    "Approval": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "TaskID": { "type": "integer", "format": "int32" },
+        "Title": { "type": "string" },
+        "Status": { "type": "string", "enum": ["Pending","Approved","Rejected","ChangesRequested","Cancelled"] },
+        "RequestedByUid": { "type": "string", "format": "uuid" },
+        "ApproverUid": { "type": "string", "format": "uuid" },
+        "RequestedDate": { "type": "string", "format": "date-time" },
+        "DecisionDate": { "type": "string", "format": "date-time" },
+        "Comments": { "type": "string" }
+      }
+    },
+    "ApprovalCreate": {
+      "type": "object",
+      "required": ["Title","ApproverUid"],
+      "properties": {
+        "Title": { "type": "string" },
+        "Description": { "type": "string" },
+        "ApproverUid": { "type": "string", "format": "uuid" },
+        "DueDate": { "type": "string", "format": "date-time" },
+        "NotifyApprover": { "type": "boolean", "default": true }
+      }
+    },
+    "ApprovalAction": {
+      "type": "object",
+      "required": ["Action"],
+      "properties": {
+        "Action": { "type": "string", "enum": ["Approve","Reject","RequestChanges"] },
+        "Comments": { "type": "string" }
+      }
+    },
+    "PagedApprovals": {
+      "type": "object",
+      "properties": {
+        "TotalCount": { "type": "integer", "format": "int32" },
+        "Page": { "type": "integer", "format": "int32" },
+        "PageSize": { "type": "integer", "format": "int32" },
+        "Items": { "type": "array", "items": { "$ref": "#/definitions/Approval" } }
+      }
+    }
+  }
+}
