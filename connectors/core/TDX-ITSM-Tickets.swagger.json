@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "version": "1.0.0",
-    "title": "TeamDynamix Web API - Service Management / Tickets",
+    "title": "TDX-ITSM-Tickets.swagger.json",
     "description": "Ticket CRUD and supporting catalogs for TeamDynamix Service Management. Designed for Power Automate custom connectors. Authentication: supply Authorization: Bearer <token> header obtained from the Core connector."
   },
   "host": "wilksbrothers.teamdynamix.com",
