@@ -1,0 +1,352 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "TeamDynamix Web API - Service Management / Tickets",
+    "description": "Ticket CRUD and supporting catalogs for TeamDynamix Service Management. Designed for Power Automate custom connectors. Authentication: supply Authorization: Bearer <token> header obtained from the Core connector."
+  },
+  "host": "wilksbrothers.teamdynamix.com",
+  "basePath": "/TDWebApi/api",
+  "schemes": ["https"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Bearer {token}"
+    }
+  },
+  "security": [{ "api_key": [] }],
+
+  "paths": {
+    "/tickets": {
+      "get": {
+        "tags": ["Tickets"],
+        "operationId": "Tickets_List",
+        "summary": "List tickets (paged)",
+        "x-ms-summary": "List tickets",
+        "parameters": [
+          { "name": "applicationId", "in": "query", "type": "integer", "format": "int32", "required": false, "description": "Optional: limit to a specific application." },
+          { "name": "statusId", "in": "query", "type": "integer", "format": "int32", "required": false, "description": "Optional: filter by single status." },
+          { "name": "page", "in": "query", "type": "integer", "format": "int32", "default": 1 },
+          { "name": "pageSize", "in": "query", "type": "integer", "format": "int32", "default": 50 }
+        ],
+        "responses": {
+          "200": { "description": "Paged list", "schema": { "$ref": "#/definitions/PagedTickets" } },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["Tickets"],
+        "operationId": "Tickets_Create",
+        "summary": "Create ticket",
+        "x-ms-summary": "Create ticket",
+        "parameters": [
+          { "name": "ticket", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TicketCreate" } }
+        ],
+        "responses": {
+          "200": { "description": "Created ticket", "schema": { "$ref": "#/definitions/Ticket" } },
+          "400": { "description": "Bad request" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+
+    "/tickets/{id}": {
+      "get": {
+        "tags": ["Tickets"],
+        "operationId": "Tickets_Get",
+        "summary": "Get ticket",
+        "x-ms-summary": "Get ticket",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" }
+        ],
+        "responses": {
+          "200": { "description": "Ticket", "schema": { "$ref": "#/definitions/Ticket" } },
+          "404": { "description": "Not found" }
+        }
+      },
+      "put": {
+        "tags": ["Tickets"],
+        "operationId": "Tickets_Update",
+        "summary": "Update ticket",
+        "x-ms-summary": "Update ticket",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "ticket", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TicketUpdate" } }
+        ],
+        "responses": {
+          "200": { "description": "Updated ticket", "schema": { "$ref": "#/definitions/Ticket" } }
+        }
+      }
+    },
+
+    "/tickets/search": {
+      "post": {
+        "tags": ["Tickets"],
+        "operationId": "Tickets_Search",
+        "summary": "Search tickets (paged)",
+        "x-ms-summary": "Search tickets",
+        "parameters": [
+          { "name": "criteria", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TicketSearchRequest" } }
+        ],
+        "responses": {
+          "200": { "description": "Paged search results", "schema": { "$ref": "#/definitions/PagedTickets" } }
+        }
+      }
+    },
+
+    "/tickets/savedsearches": {
+      "get": {
+        "tags": ["Saved Searches"],
+        "operationId": "Tickets_ListSavedSearches",
+        "summary": "List ticket saved searches",
+        "x-ms-summary": "List saved searches",
+        "responses": {
+          "200": { "description": "Saved searches", "schema": { "type": "array", "items": { "$ref": "#/definitions/SavedSearch" } } }
+        }
+      }
+    },
+
+    "/tickets/savedsearches/{savedSearchId}/results": {
+      "get": {
+        "tags": ["Saved Searches"],
+        "operationId": "Tickets_RunSavedSearch",
+        "summary": "Run ticket saved search (paged)",
+        "x-ms-summary": "Run saved search",
+        "parameters": [
+          { "name": "savedSearchId", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "page", "in": "query", "type": "integer", "format": "int32", "default": 1 },
+          { "name": "pageSize", "in": "query", "type": "integer", "format": "int32", "default": 50 }
+        ],
+        "responses": {
+          "200": { "description": "Paged results", "schema": { "$ref": "#/definitions/PagedTickets" } }
+        }
+      }
+    },
+
+    "/tickets/{id}/feed": {
+      "get": {
+        "tags": ["Feed"],
+        "operationId": "Tickets_ListFeed",
+        "summary": "List ticket feed entries",
+        "x-ms-summary": "List feed",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" }
+        ],
+        "responses": {
+          "200": { "description": "Feed entries", "schema": { "type": "array", "items": { "$ref": "#/definitions/FeedEntry" } } }
+        }
+      },
+      "post": {
+        "tags": ["Feed"],
+        "operationId": "Tickets_AddFeedEntry",
+        "summary": "Add ticket comment/feed entry",
+        "x-ms-summary": "Add comment",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "entry", "in": "body", "required": true, "schema": { "$ref": "#/definitions/FeedEntryCreate" } }
+        ],
+        "responses": {
+          "200": { "description": "Created entry", "schema": { "$ref": "#/definitions/FeedEntry" } }
+        }
+      }
+    },
+
+    "/tickets/{id}/assign": {
+      "post": {
+        "tags": ["Tickets"],
+        "operationId": "Tickets_Assign",
+        "summary": "Assign ticket",
+        "x-ms-summary": "Assign ticket",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "integer", "format": "int32" },
+          { "name": "assignment", "in": "body", "required": true, "schema": { "$ref": "#/definitions/TicketAssignment" } }
+        ],
+        "responses": {
+          "200": { "description": "Updated ticket", "schema": { "$ref": "#/definitions/Ticket" } }
+        }
+      }
+    },
+
+    "/tickets/catalog/priorities": {
+      "get": {
+        "tags": ["Catalogs"],
+        "operationId": "Tickets_ListPriorities",
+        "summary": "List priorities",
+        "responses": {
+          "200": { "description": "Priorities", "schema": { "type": "array", "items": { "$ref": "#/definitions/NamedValue" } } }
+        }
+      }
+    },
+    "/tickets/catalog/statuses": {
+      "get": {
+        "tags": ["Catalogs"],
+        "operationId": "Tickets_ListStatuses",
+        "summary": "List statuses",
+        "responses": {
+          "200": { "description": "Statuses", "schema": { "type": "array", "items": { "$ref": "#/definitions/NamedValue" } } }
+        }
+      }
+    },
+    "/tickets/catalog/types": {
+      "get": {
+        "tags": ["Catalogs"],
+        "operationId": "Tickets_ListTypes",
+        "summary": "List types",
+        "responses": {
+          "200": { "description": "Types", "schema": { "type": "array", "items": { "$ref": "#/definitions/NamedValue" } } }
+        }
+      }
+    },
+    "/tickets/catalog/impacts": {
+      "get": {
+        "tags": ["Catalogs"],
+        "operationId": "Tickets_ListImpacts",
+        "summary": "List impacts",
+        "responses": {
+          "200": { "description": "Impacts", "schema": { "type": "array", "items": { "$ref": "#/definitions/NamedValue" } } }
+        }
+      }
+    },
+    "/tickets/catalog/urgencies": {
+      "get": {
+        "tags": ["Catalogs"],
+        "operationId": "Tickets_ListUrgencies",
+        "summary": "List urgencies",
+        "responses": {
+          "200": { "description": "Urgencies", "schema": { "type": "array", "items": { "$ref": "#/definitions/NamedValue" } } }
+        }
+      }
+    },
+    "/tickets/catalog/sources": {
+      "get": {
+        "tags": ["Catalogs"],
+        "operationId": "Tickets_ListSources",
+        "summary": "List sources",
+        "responses": {
+          "200": { "description": "Sources", "schema": { "type": "array", "items": { "$ref": "#/definitions/NamedValue" } } }
+        }
+      }
+    }
+  },
+
+  "definitions": {
+    "Ticket": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "Number": { "type": "string" },
+        "Title": { "type": "string" },
+        "Description": { "type": "string" },
+        "ApplicationID": { "type": "integer", "format": "int32" },
+        "TypeID": { "type": "integer", "format": "int32" },
+        "StatusID": { "type": "integer", "format": "int32" },
+        "PriorityID": { "type": "integer", "format": "int32" },
+        "ImpactID": { "type": "integer", "format": "int32" },
+        "UrgencyID": { "type": "integer", "format": "int32" },
+        "SourceID": { "type": "integer", "format": "int32" },
+        "RequestorUid": { "type": "string", "format": "uuid" },
+        "ResponsibleGroupID": { "type": "integer", "format": "int32" },
+        "ResponsibleUid": { "type": "string", "format": "uuid" },
+        "CreatedDate": { "type": "string", "format": "date-time" },
+        "DueDate": { "type": "string", "format": "date-time" },
+        "IsPrivate": { "type": "boolean" },
+        "Attributes": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "TicketCreate": {
+      "type": "object",
+      "required": ["Title", "ApplicationID"],
+      "properties": {
+        "Title": { "type": "string" },
+        "Description": { "type": "string" },
+        "ApplicationID": { "type": "integer", "format": "int32" },
+        "TypeID": { "type": "integer", "format": "int32" },
+        "StatusID": { "type": "integer", "format": "int32" },
+        "PriorityID": { "type": "integer", "format": "int32" },
+        "ImpactID": { "type": "integer", "format": "int32" },
+        "UrgencyID": { "type": "integer", "format": "int32" },
+        "SourceID": { "type": "integer", "format": "int32" },
+        "RequestorUid": { "type": "string", "format": "uuid" },
+        "ResponsibleGroupID": { "type": "integer", "format": "int32" },
+        "ResponsibleUid": { "type": "string", "format": "uuid" },
+        "DueDate": { "type": "string", "format": "date-time" },
+        "Attributes": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "TicketUpdate": {
+      "allOf": [ { "$ref": "#/definitions/TicketCreate" } ]
+    },
+    "TicketAssignment": {
+      "type": "object",
+      "properties": {
+        "ResponsibleGroupID": { "type": "integer", "format": "int32" },
+        "ResponsibleUid": { "type": "string", "format": "uuid" }
+      }
+    },
+    "TicketSearchRequest": {
+      "type": "object",
+      "properties": {
+        "ApplicationID": { "type": "integer", "format": "int32" },
+        "Text": { "type": "string", "description": "Free text across common fields." },
+        "TypeIDs": { "type": "array", "items": { "type": "integer", "format": "int32" } },
+        "StatusIDs": { "type": "array", "items": { "type": "integer", "format": "int32" } },
+        "PriorityIDs": { "type": "array", "items": { "type": "integer", "format": "int32" } },
+        "RequestorUid": { "type": "string", "format": "uuid" },
+        "CreatedAfter": { "type": "string", "format": "date-time" },
+        "CreatedBefore": { "type": "string", "format": "date-time" },
+        "SortField": { "type": "string", "enum": ["CreatedDate","DueDate","Priority","Status","Number"] },
+        "SortDirection": { "type": "string", "enum": ["Asc","Desc"], "default": "Desc" },
+        "Page": { "type": "integer", "format": "int32", "default": 1 },
+        "PageSize": { "type": "integer", "format": "int32", "default": 50 }
+      }
+    },
+    "PagedTickets": {
+      "type": "object",
+      "properties": {
+        "TotalCount": { "type": "integer", "format": "int32" },
+        "Page": { "type": "integer", "format": "int32" },
+        "PageSize": { "type": "integer", "format": "int32" },
+        "Items": { "type": "array", "items": { "$ref": "#/definitions/Ticket" } }
+      }
+    },
+    "FeedEntry": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "CreatedDate": { "type": "string", "format": "date-time" },
+        "CreatedByUid": { "type": "string", "format": "uuid" },
+        "Text": { "type": "string" },
+        "IsPrivate": { "type": "boolean" }
+      }
+    },
+    "FeedEntryCreate": {
+      "type": "object",
+      "required": ["Text"],
+      "properties": {
+        "Text": { "type": "string" },
+        "IsPrivate": { "type": "boolean", "default": false }
+      }
+    },
+    "SavedSearch": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "Name": { "type": "string" },
+        "Description": { "type": "string" }
+      }
+    },
+    "NamedValue": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer", "format": "int32" },
+        "Name": { "type": "string" }
+      }
+    }
+  }
+}
